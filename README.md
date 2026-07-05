@@ -18,3 +18,10 @@ Impostors can also see the other impostors.
 ## Saved Data
 
 Setups are saved locally in the browser using cookies, with `localStorage` as a fallback for direct file usage. Profiles can be created, updated, selected, and deleted from the page.
+
+## Icon
+
+The app icon uses an Among Us impostor PNG from CityPNG:
+https://www.citypng.com/photo/5651/hd-red-among-us-character-with-knife-on-hand-png
+
+CityPNG lists the asset as free for personal use.
