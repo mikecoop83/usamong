@@ -40,6 +40,7 @@
 
       button,
       input,
+      select,
       textarea {
         font: inherit;
       }
@@ -65,6 +66,7 @@
       }
 
       input,
+      select,
       textarea {
         width: 100%;
         border: 1px solid var(--line);
@@ -77,6 +79,11 @@
       input {
         min-height: 44px;
         padding: 10px 12px;
+      }
+
+      select {
+        min-height: 44px;
+        padding: 10px 38px 10px 12px;
       }
 
       textarea {
@@ -233,6 +240,12 @@
         grid-template-columns: minmax(0, 1fr) 44px;
         align-items: end;
         gap: 9px;
+      }
+
+      .profile-grid,
+      .profile-actions {
+        display: grid;
+        gap: 10px;
       }
 
       .icon-button {
@@ -399,8 +412,13 @@
         }
 
         .action-row,
-        .done-actions {
+        .done-actions,
+        .profile-grid {
           grid-template-columns: 1fr 1fr;
+        }
+
+        .profile-actions {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
         .player-name {
@@ -426,10 +444,40 @@
       <section id="setupView" class="panel setup-panel" aria-labelledby="setupTitle">
         <div class="section-header">
           <h2 id="setupTitle">Game setup</h2>
-          <button id="clearSavedButton" class="button-danger" type="button">
-            Clear saved
-          </button>
         </div>
+
+        <section class="section" aria-labelledby="profilesTitle">
+          <div class="section-header">
+            <h2 id="profilesTitle">Profiles</h2>
+            <span id="profileCount" class="count">0 saved</span>
+          </div>
+          <div class="profile-grid">
+            <div>
+              <label for="profileSelect">Saved profile</label>
+              <select id="profileSelect"></select>
+            </div>
+            <div>
+              <label for="profileNameInput">Profile name</label>
+              <input
+                id="profileNameInput"
+                type="text"
+                autocomplete="off"
+                placeholder="Game night"
+              />
+            </div>
+          </div>
+          <div class="profile-actions">
+            <button id="newProfileButton" class="button-primary" type="button">
+              Create new profile
+            </button>
+            <button id="updateProfileButton" class="button-secondary" type="button">
+              Update selected
+            </button>
+            <button id="deleteProfileButton" class="button-danger" type="button">
+              Delete selected
+            </button>
+          </div>
+        </section>
 
         <section class="section" aria-labelledby="playersTitle">
           <div class="section-header">
@@ -519,6 +567,9 @@
         players: ["", "", "", ""],
         impostorRoles: [{ name: "", description: "" }],
         crewmateRoles: [{ name: "", description: "" }],
+        profiles: [],
+        activeProfileId: "",
+        profileName: "",
         assignments: [],
         revealIndex: 0,
         roleVisible: false,
@@ -531,6 +582,9 @@
         playersList: document.querySelector("#playersList"),
         impostorRolesList: document.querySelector("#impostorRolesList"),
         crewmateRolesList: document.querySelector("#crewmateRolesList"),
+        profileSelect: document.querySelector("#profileSelect"),
+        profileNameInput: document.querySelector("#profileNameInput"),
+        profileCount: document.querySelector("#profileCount"),
         playerCount: document.querySelector("#playerCount"),
         impostorCount: document.querySelector("#impostorCount"),
         crewmateCount: document.querySelector("#crewmateCount"),
@@ -538,8 +592,10 @@
         addPlayerButton: document.querySelector("#addPlayerButton"),
         addImpostorRoleButton: document.querySelector("#addImpostorRoleButton"),
         addCrewmateRoleButton: document.querySelector("#addCrewmateRoleButton"),
+        newProfileButton: document.querySelector("#newProfileButton"),
+        updateProfileButton: document.querySelector("#updateProfileButton"),
+        deleteProfileButton: document.querySelector("#deleteProfileButton"),
         assignButton: document.querySelector("#assignButton"),
-        clearSavedButton: document.querySelector("#clearSavedButton"),
         resetRoundButton: document.querySelector("#resetRoundButton"),
         revealProgress: document.querySelector("#revealProgress"),
         revealPlayerName: document.querySelector("#revealPlayerName"),
@@ -567,18 +623,123 @@
         return Array.isArray(list) && list.length > 0 ? list : fallback;
       }
 
-      function applySavedPayload(payload) {
-        state.players = normalizeLoadedList(payload.players, state.players)
+      function emptySetup() {
+        return {
+          players: ["", "", "", ""],
+          impostorRoles: [{ name: "", description: "" }],
+          crewmateRoles: [{ name: "", description: "" }],
+        };
+      }
+
+      function currentSetupPayload() {
+        return {
+          players: [...state.players],
+          impostorRoles: state.impostorRoles.map(cloneRole),
+          crewmateRoles: state.crewmateRoles.map(cloneRole),
+        };
+      }
+
+      function normalizeSetupPayload(payload, fallback = emptySetup()) {
+        const source =
+          payload && typeof payload === "object" && !Array.isArray(payload)
+            ? payload
+            : {};
+        const players = normalizeLoadedList(source.players, fallback.players)
           .filter((player) => typeof player === "string")
           .map((player) => player);
-        state.impostorRoles = normalizeLoadedList(
-          payload.impostorRoles,
-          state.impostorRoles,
+        const impostorRoles = normalizeLoadedList(
+          source.impostorRoles,
+          fallback.impostorRoles,
         ).map(cloneRole);
-        state.crewmateRoles = normalizeLoadedList(
-          payload.crewmateRoles,
-          state.crewmateRoles,
+        const crewmateRoles = normalizeLoadedList(
+          source.crewmateRoles,
+          fallback.crewmateRoles,
         ).map(cloneRole);
+
+        return {
+          players: players.length > 0 ? players : [""],
+          impostorRoles:
+            impostorRoles.length > 0
+              ? impostorRoles
+              : [{ name: "", description: "" }],
+          crewmateRoles:
+            crewmateRoles.length > 0
+              ? crewmateRoles
+              : [{ name: "", description: "" }],
+        };
+      }
+
+      function applySavedPayload(payload) {
+        const setup = normalizeSetupPayload(payload, currentSetupPayload());
+        state.players = setup.players;
+        state.impostorRoles = setup.impostorRoles;
+        state.crewmateRoles = setup.crewmateRoles;
+      }
+
+      function createProfileId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return window.crypto.randomUUID();
+        }
+
+        return `profile-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 10)}`;
+      }
+
+      function normalizeProfile(profile) {
+        if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+          return null;
+        }
+
+        const name = typeof profile.name === "string" ? profile.name.trim() : "";
+        if (!name) {
+          return null;
+        }
+
+        return {
+          id:
+            typeof profile.id === "string" && profile.id
+              ? profile.id
+              : createProfileId(),
+          name,
+          setup: normalizeSetupPayload(profile.setup),
+        };
+      }
+
+      function activeProfile() {
+        return (
+          state.profiles.find((profile) => profile.id === state.activeProfileId) ||
+          null
+        );
+      }
+
+      function applyStoredPayload(payload) {
+        if (payload && payload.version === 2) {
+          state.profiles = Array.isArray(payload.profiles)
+            ? payload.profiles.map(normalizeProfile).filter(Boolean)
+            : [];
+          state.activeProfileId =
+            typeof payload.activeProfileId === "string" &&
+            state.profiles.some(
+              (profile) => profile.id === payload.activeProfileId,
+            )
+              ? payload.activeProfileId
+              : "";
+          state.profileName =
+            typeof payload.draftProfileName === "string"
+              ? payload.draftProfileName
+              : activeProfile()?.name || "";
+
+          applySavedPayload(payload.draft || activeProfile()?.setup);
+          elements.profileNameInput.value = state.profileName;
+          return;
+        }
+
+        state.profiles = [];
+        state.activeProfileId = "";
+        state.profileName = "";
+        elements.profileNameInput.value = "";
+        applySavedPayload(payload);
       }
 
       function readCookiePayload() {
@@ -607,7 +768,7 @@
         }
 
         try {
-          applySavedPayload(JSON.parse(rawPayload));
+          applyStoredPayload(JSON.parse(rawPayload));
         } catch {
           deleteSavedSetup();
         }
@@ -615,9 +776,11 @@
 
       function saveSetup() {
         const payload = JSON.stringify({
-          players: state.players,
-          impostorRoles: state.impostorRoles,
-          crewmateRoles: state.crewmateRoles,
+          version: 2,
+          activeProfileId: state.activeProfileId,
+          draftProfileName: state.profileName,
+          draft: currentSetupPayload(),
+          profiles: state.profiles,
         });
 
         document.cookie = `${COOKIE_NAME}=${encodeURIComponent(payload)}; max-age=${COOKIE_MAX_AGE}; path=/; samesite=lax`;
@@ -771,7 +934,40 @@
         });
       }
 
+      function renderProfileControls() {
+        const selectedProfile = activeProfile();
+        const profileNameInputIsFocused =
+          document.activeElement === elements.profileNameInput;
+
+        elements.profileSelect.replaceChildren();
+
+        const draftOption = document.createElement("option");
+        draftOption.value = "";
+        draftOption.textContent = "Current setup";
+        elements.profileSelect.append(draftOption);
+
+        state.profiles.forEach((profile) => {
+          const option = document.createElement("option");
+          option.value = profile.id;
+          option.textContent = profile.name;
+          elements.profileSelect.append(option);
+        });
+
+        elements.profileSelect.value = selectedProfile ? selectedProfile.id : "";
+        elements.profileCount.textContent = `${state.profiles.length} saved`;
+
+        if (!profileNameInputIsFocused) {
+          elements.profileNameInput.value = state.profileName;
+        }
+
+        elements.newProfileButton.disabled = !state.profileName.trim();
+        elements.updateProfileButton.disabled =
+          !selectedProfile || !state.profileName.trim();
+        elements.deleteProfileButton.disabled = !selectedProfile;
+      }
+
       function renderAll() {
+        renderProfileControls();
         renderPlayers();
         renderRoles(
           state.impostorRoles,
@@ -1019,14 +1215,128 @@
         showRevealView();
       }
 
-      function clearSavedSetup() {
-        deleteSavedSetup();
-        state.players = ["", "", "", ""];
-        state.impostorRoles = [{ name: "", description: "" }];
-        state.crewmateRoles = [{ name: "", description: "" }];
-        resetRound();
+      function loadProfile(profileId) {
+        if (!profileId) {
+          state.activeProfileId = "";
+          state.profileName = "";
+          elements.profileNameInput.value = "";
+          renderProfileControls();
+          saveSetup();
+          flashSavedStatus("Current setup");
+          return;
+        }
+
+        const profile = state.profiles.find((item) => item.id === profileId);
+        if (!profile) {
+          state.activeProfileId = "";
+          state.profileName = "";
+          renderAll();
+          saveSetup();
+          return;
+        }
+
+        state.activeProfileId = profile.id;
+        state.profileName = profile.name;
+        applySavedPayload(profile.setup);
         renderAll();
-        flashSavedStatus("Cleared");
+        saveSetup();
+        flashSavedStatus("Profile loaded");
+      }
+
+      function validateProfileName(excludedProfileId = "") {
+        const name = state.profileName.trim();
+        if (!name) {
+          showErrors(["Enter a profile name."]);
+          return "";
+        }
+
+        const duplicateProfile = state.profiles.find(
+          (profile) =>
+            profile.id !== excludedProfileId &&
+            profile.name.toLowerCase() === name.toLowerCase(),
+        );
+
+        if (duplicateProfile) {
+          showErrors(["A profile with that name already exists."]);
+          return "";
+        }
+
+        return name;
+      }
+
+      function createNewProfile() {
+        const name = validateProfileName();
+        if (!name) {
+          return;
+        }
+
+        const profile = {
+          id: createProfileId(),
+          name,
+          setup: currentSetupPayload(),
+        };
+
+        state.profiles.push(profile);
+        state.activeProfileId = profile.id;
+        state.profileName = name;
+        clearErrors();
+        renderProfileControls();
+        saveSetup();
+        flashSavedStatus("Profile created");
+      }
+
+      function updateSelectedProfile() {
+        const selectedProfile = activeProfile();
+        if (!selectedProfile) {
+          showErrors(["Choose a saved profile to update."]);
+          return;
+        }
+
+        const name = validateProfileName(selectedProfile.id);
+        if (!name) {
+          return;
+        }
+
+        const setup = currentSetupPayload();
+        const existingIndex = state.profiles.findIndex(
+          (profile) => profile.id === selectedProfile.id,
+        );
+
+        state.profiles[existingIndex] = {
+          ...state.profiles[existingIndex],
+          name,
+          setup,
+        };
+
+        state.activeProfileId = selectedProfile.id;
+        state.profileName = name;
+        clearErrors();
+        renderProfileControls();
+        saveSetup();
+        flashSavedStatus("Profile updated");
+      }
+
+      function deleteSelectedProfile() {
+        const profile = activeProfile();
+        if (!profile) {
+          return;
+        }
+
+        const shouldDelete = window.confirm(
+          `Delete selected profile "${profile.name}"?`,
+        );
+        if (!shouldDelete) {
+          return;
+        }
+
+        state.profiles = state.profiles.filter((item) => item.id !== profile.id);
+        state.activeProfileId = "";
+        state.profileName = "";
+        elements.profileNameInput.value = "";
+        clearErrors();
+        renderProfileControls();
+        saveSetup();
+        flashSavedStatus("Profile deleted");
       }
 
       elements.addPlayerButton.addEventListener("click", () => {
@@ -1054,8 +1364,20 @@
           .focus();
       });
 
+      elements.profileSelect.addEventListener("change", (event) => {
+        loadProfile(event.target.value);
+      });
+
+      elements.profileNameInput.addEventListener("input", (event) => {
+        state.profileName = event.target.value;
+        renderProfileControls();
+        saveSetup();
+      });
+
+      elements.newProfileButton.addEventListener("click", createNewProfile);
+      elements.updateProfileButton.addEventListener("click", updateSelectedProfile);
+      elements.deleteProfileButton.addEventListener("click", deleteSelectedProfile);
       elements.assignButton.addEventListener("click", assignRoles);
-      elements.clearSavedButton.addEventListener("click", clearSavedSetup);
       elements.resetRoundButton.addEventListener("click", resetRound);
 
       elements.revealButton.addEventListener("click", () => {
