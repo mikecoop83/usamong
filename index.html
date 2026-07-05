@@ -502,6 +502,16 @@
             <h2 id="impostorsTitle">Impostors</h2>
             <span id="impostorCount" class="count">0</span>
           </div>
+          <div>
+            <label for="impostorSlotsInput">Assigned this game</label>
+            <input
+              id="impostorSlotsInput"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              step="1"
+            />
+          </div>
           <div id="impostorRolesList" class="rows"></div>
           <button id="addImpostorRoleButton" class="button-secondary" type="button">
             Add impostor role
@@ -574,6 +584,7 @@
       const state = {
         players: ["", "", "", ""],
         impostorRoles: [{ name: "", description: "" }],
+        impostorSlots: 1,
         crewmateRoles: [
           { name: "", description: "", alignment: "Crewmate" },
         ],
@@ -597,6 +608,7 @@
         profileCount: document.querySelector("#profileCount"),
         playerCount: document.querySelector("#playerCount"),
         impostorCount: document.querySelector("#impostorCount"),
+        impostorSlotsInput: document.querySelector("#impostorSlotsInput"),
         crewmateCount: document.querySelector("#crewmateCount"),
         errors: document.querySelector("#errors"),
         addPlayerButton: document.querySelector("#addPlayerButton"),
@@ -639,6 +651,7 @@
         return {
           players: ["", "", "", ""],
           impostorRoles: [{ name: "", description: "" }],
+          impostorSlots: 1,
           crewmateRoles: [
             { name: "", description: "", alignment: "Crewmate" },
           ],
@@ -649,8 +662,14 @@
         return {
           players: [...state.players],
           impostorRoles: state.impostorRoles.map(cloneRole),
+          impostorSlots: state.impostorSlots,
           crewmateRoles: state.crewmateRoles.map(cloneRole),
         };
+      }
+
+      function parsePositiveInteger(value, fallback) {
+        const parsed = Number.parseInt(value, 10);
+        return Number.isFinite(parsed) && parsed >= 1 ? parsed : fallback;
       }
 
       function normalizeSetupPayload(payload, fallback = emptySetup()) {
@@ -665,6 +684,20 @@
           source.impostorRoles,
           fallback.impostorRoles,
         ).map(cloneRole);
+        const filledImpostorRoleCount = impostorRoles.filter((role) =>
+          role.name.trim(),
+        ).length;
+        const fallbackImpostorSlots = parsePositiveInteger(
+          fallback.impostorSlots,
+          1,
+        );
+        const impostorSlots =
+          source.impostorSlots === undefined
+            ? Math.max(1, filledImpostorRoleCount || fallbackImpostorSlots)
+            : parsePositiveInteger(
+                source.impostorSlots,
+                Math.max(1, filledImpostorRoleCount || fallbackImpostorSlots),
+              );
         const crewmateRoles = normalizeLoadedList(
           source.crewmateRoles,
           fallback.crewmateRoles,
@@ -676,6 +709,7 @@
             impostorRoles.length > 0
               ? impostorRoles
               : [{ name: "", description: "" }],
+          impostorSlots,
           crewmateRoles:
             crewmateRoles.length > 0
               ? crewmateRoles
@@ -687,6 +721,7 @@
         const setup = normalizeSetupPayload(payload, currentSetupPayload());
         state.players = setup.players;
         state.impostorRoles = setup.impostorRoles;
+        state.impostorSlots = setup.impostorSlots;
         state.crewmateRoles = setup.crewmateRoles;
       }
 
@@ -1028,6 +1063,7 @@
 
       function renderAll() {
         renderProfileControls();
+        elements.impostorSlotsInput.value = state.impostorSlots;
         renderPlayers();
         renderRoles(
           state.impostorRoles,
@@ -1063,10 +1099,10 @@
       }
 
       function updateCounts() {
+        const filledImpostorRoleCount = filledRoles(state.impostorRoles).length;
         elements.playerCount.textContent = `${filledPlayers().length} ready`;
-        elements.impostorCount.textContent = `${filledRoles(
-          state.impostorRoles,
-        ).length} ready`;
+        elements.impostorCount.textContent = `${filledImpostorRoleCount} defined`;
+        elements.impostorSlotsInput.max = Math.max(1, filledImpostorRoleCount);
         elements.crewmateCount.textContent = `${filledRoles(
           state.crewmateRoles,
         ).length} ready`;
@@ -1101,6 +1137,7 @@
       function validateSetup() {
         const players = filledPlayers();
         const impostorRoles = filledRoles(state.impostorRoles);
+        const impostorSlots = parsePositiveInteger(state.impostorSlots, 1);
         const crewmateRoles = filledRoles(state.crewmateRoles);
         const errors = [];
         const uniquePlayers = new Set(players.map((player) => player.toLowerCase()));
@@ -1117,11 +1154,17 @@
           errors.push("Add at least one impostor role.");
         }
 
-        if (impostorRoles.length > players.length) {
-          errors.push("Impostor roles cannot outnumber players.");
+        if (impostorSlots > impostorRoles.length) {
+          errors.push(
+            "Assigned impostors cannot outnumber defined impostor roles.",
+          );
         }
 
-        const remainingPlayers = players.length - impostorRoles.length;
+        if (impostorSlots > players.length) {
+          errors.push("Assigned impostors cannot outnumber players.");
+        }
+
+        const remainingPlayers = players.length - impostorSlots;
         if (crewmateRoles.length < remainingPlayers) {
           errors.push(
             `Add ${
@@ -1136,6 +1179,7 @@
           errors,
           players,
           impostorRoles,
+          impostorSlots,
           crewmateRoles,
         };
       }
@@ -1163,7 +1207,10 @@
         saveSetup();
 
         const shuffledPlayers = shuffled(setup.players);
-        const shuffledImpostorRoles = shuffled(setup.impostorRoles);
+        const shuffledImpostorRoles = shuffled(setup.impostorRoles).slice(
+          0,
+          setup.impostorSlots,
+        );
         const shuffledCrewmateRoles = shuffled(setup.crewmateRoles);
         const assignmentsByPlayer = new Map();
 
@@ -1420,6 +1467,14 @@
         document
           .querySelector(`#impostor-role-name-${state.impostorRoles.length - 1}`)
           .focus();
+      });
+
+      elements.impostorSlotsInput.addEventListener("input", (event) => {
+        state.impostorSlots = parsePositiveInteger(event.target.value, 1);
+        event.target.value = state.impostorSlots;
+        updateCounts();
+        clearErrors();
+        saveSetup();
       });
 
       elements.addCrewmateRoleButton.addEventListener("click", () => {
