@@ -366,6 +366,13 @@
         white-space: pre-wrap;
       }
 
+      .role-alignment {
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
       .impostor-list {
         display: none;
         border: 1px solid rgba(197, 34, 51, 0.22);
@@ -501,14 +508,14 @@
           </button>
         </section>
 
-        <section class="section" aria-labelledby="crewmatesTitle">
+        <section class="section" aria-labelledby="nonImpostersTitle">
           <div class="section-header">
-            <h2 id="crewmatesTitle">Crewmates</h2>
+            <h2 id="nonImpostersTitle">Non-Imposters</h2>
             <span id="crewmateCount" class="count">0</span>
           </div>
           <div id="crewmateRolesList" class="rows"></div>
           <button id="addCrewmateRoleButton" class="button-secondary" type="button">
-            Add crewmate role
+            Add non-imposter role
           </button>
         </section>
 
@@ -530,6 +537,7 @@
           <p id="revealPlayerName" class="player-name"></p>
 
           <div id="roleBlock" class="hidden">
+            <p id="roleAlignment" class="role-alignment"></p>
             <p id="roleName" class="role-name"></p>
             <p id="roleDescription" class="role-description"></p>
           </div>
@@ -566,7 +574,9 @@
       const state = {
         players: ["", "", "", ""],
         impostorRoles: [{ name: "", description: "" }],
-        crewmateRoles: [{ name: "", description: "" }],
+        crewmateRoles: [
+          { name: "", description: "", alignment: "Crewmate" },
+        ],
         profiles: [],
         activeProfileId: "",
         profileName: "",
@@ -600,6 +610,7 @@
         revealProgress: document.querySelector("#revealProgress"),
         revealPlayerName: document.querySelector("#revealPlayerName"),
         roleBlock: document.querySelector("#roleBlock"),
+        roleAlignment: document.querySelector("#roleAlignment"),
         roleName: document.querySelector("#roleName"),
         roleDescription: document.querySelector("#roleDescription"),
         impostorList: document.querySelector("#impostorList"),
@@ -616,6 +627,7 @@
           name: typeof role.name === "string" ? role.name : "",
           description:
             typeof role.description === "string" ? role.description : "",
+          alignment: role.alignment === "Neutral" ? "Neutral" : "Crewmate",
         };
       }
 
@@ -627,7 +639,9 @@
         return {
           players: ["", "", "", ""],
           impostorRoles: [{ name: "", description: "" }],
-          crewmateRoles: [{ name: "", description: "" }],
+          crewmateRoles: [
+            { name: "", description: "", alignment: "Crewmate" },
+          ],
         };
       }
 
@@ -840,6 +854,24 @@
         return textarea;
       }
 
+      function createSelect(id, value, options, onChange) {
+        const select = document.createElement("select");
+        select.id = id;
+
+        options.forEach((optionValue) => {
+          const option = document.createElement("option");
+          option.value = optionValue;
+          option.textContent = optionValue;
+          select.append(option);
+        });
+
+        select.value = options.includes(value) ? value : options[0];
+        select.addEventListener("change", (event) =>
+          onChange(event.target.value),
+        );
+        return select;
+      }
+
       function createRemoveButton(label, onClick) {
         const button = document.createElement("button");
         button.className = "icon-button";
@@ -886,7 +918,14 @@
         });
       }
 
-      function renderRoles(list, container, prefix, title, placeholder) {
+      function renderRoles(
+        list,
+        container,
+        prefix,
+        title,
+        placeholder,
+        alignmentOptions = null,
+      ) {
         container.replaceChildren();
 
         list.forEach((role, index) => {
@@ -913,7 +952,11 @@
             createRemoveButton(`Remove ${title.toLowerCase()} ${index + 1}`, () => {
               list.splice(index, 1);
               if (list.length === 0) {
-                list.push({ name: "", description: "" });
+                list.push({
+                  name: "",
+                  description: "",
+                  alignment: alignmentOptions ? alignmentOptions[0] : "Crewmate",
+                });
               }
               renderAll();
               saveSetup();
@@ -921,8 +964,25 @@
           );
 
           const descriptionId = `${prefix}-role-description-${index}`;
+          row.append(topLine);
+
+          if (alignmentOptions) {
+            const alignmentId = `${prefix}-role-alignment-${index}`;
+            row.append(
+              createFieldLabel("Type", alignmentId),
+              createSelect(
+                alignmentId,
+                role.alignment,
+                alignmentOptions,
+                (value) => {
+                  role.alignment = value;
+                  saveSetup();
+                },
+              ),
+            );
+          }
+
           row.append(
-            topLine,
             createFieldLabel("Description", descriptionId),
             createTextarea(descriptionId, role.description, "Optional", (value) => {
               role.description = value;
@@ -980,8 +1040,9 @@
           state.crewmateRoles,
           elements.crewmateRolesList,
           "crewmate",
-          "Crewmate role",
+          "Non-imposter role",
           "Role name",
+          ["Crewmate", "Neutral"],
         );
         updateCounts();
         clearErrors();
@@ -996,6 +1057,7 @@
           .map((role) => ({
             name: role.name.trim(),
             description: role.description.trim(),
+            alignment: role.alignment === "Neutral" ? "Neutral" : "Crewmate",
           }))
           .filter((role) => role.name);
       }
@@ -1062,7 +1124,9 @@
         const remainingPlayers = players.length - impostorRoles.length;
         if (crewmateRoles.length < remainingPlayers) {
           errors.push(
-            `Add ${remainingPlayers - crewmateRoles.length} more crewmate role${
+            `Add ${
+              remainingPlayers - crewmateRoles.length
+            } more non-imposter role${
               remainingPlayers - crewmateRoles.length === 1 ? "" : "s"
             }.`,
           );
@@ -1115,7 +1179,7 @@
           assignmentsByPlayer.set(player, {
             player,
             role: shuffledCrewmateRoles[index],
-            team: "crewmate",
+            team: "non-imposter",
           });
         });
 
@@ -1156,12 +1220,15 @@
         elements.revealPlayerName.textContent = assignment.player;
 
         if (!state.roleVisible) {
+          elements.roleAlignment.textContent = "";
           elements.roleName.textContent = "";
           elements.roleDescription.textContent = "";
           elements.revealButton.textContent = "Show role";
           return;
         }
 
+        elements.roleAlignment.textContent =
+          assignment.team === "impostor" ? "Imposter" : assignment.role.alignment;
         elements.roleName.textContent = assignment.role.name;
         elements.roleDescription.textContent = assignment.role.description;
         elements.roleDescription.classList.toggle(
@@ -1356,7 +1423,11 @@
       });
 
       elements.addCrewmateRoleButton.addEventListener("click", () => {
-        state.crewmateRoles.push({ name: "", description: "" });
+        state.crewmateRoles.push({
+          name: "",
+          description: "",
+          alignment: "Crewmate",
+        });
         renderAll();
         saveSetup();
         document
