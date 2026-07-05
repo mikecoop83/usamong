@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coopersmith Creations Presents - Us Among Roles</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f4ef;
+        --surface: #fffefa;
+        --surface-strong: #f0ece2;
+        --text: #191714;
+        --muted: #686159;
+        --line: #ded7cc;
+        --accent: #c52233;
+        --accent-strong: #971927;
+        --ink: #111827;
+        --focus: #2563eb;
+        --success: #0f766e;
+        --warning: #b45309;
+        --radius: 8px;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          linear-gradient(180deg, rgba(197, 34, 51, 0.08), transparent 260px),
+          var(--bg);
+        color: var(--text);
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        min-height: 44px;
+        border: 0;
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-weight: 750;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible {
+        outline: 3px solid rgba(37, 99, 235, 0.28);
+        outline-offset: 2px;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.58;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #ffffff;
+        color: var(--text);
+        font-size: 16px;
+      }
+
+      input {
+        min-height: 44px;
+        padding: 10px 12px;
+      }
+
+      textarea {
+        min-height: 70px;
+        resize: vertical;
+        padding: 11px 12px;
+        line-height: 1.35;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 760;
+        text-transform: uppercase;
+      }
+
+      .app-shell {
+        width: min(100%, 720px);
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 18px 14px 28px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        gap: 10px;
+      }
+
+      .brand-mark {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 auto;
+        border: 2px solid #111827;
+        border-radius: 16px 16px 13px 13px;
+        background: var(--accent);
+        box-shadow: inset -8px -7px 0 rgba(0, 0, 0, 0.14);
+      }
+
+      .brand-mark::before {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        width: 19px;
+        height: 11px;
+        border: 2px solid #111827;
+        border-radius: 999px;
+        background: #b7e1eb;
+        box-shadow: inset 4px -2px 0 rgba(0, 0, 0, 0.1);
+        content: "";
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        overflow-wrap: anywhere;
+        font-size: 1.2rem;
+        line-height: 1.1;
+      }
+
+      h2 {
+        font-size: 1rem;
+        line-height: 1.2;
+      }
+
+      h3 {
+        font-size: 0.96rem;
+      }
+
+      .status-pill {
+        flex: 0 0 auto;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.68);
+        padding: 6px 10px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 254, 250, 0.93);
+        box-shadow: 0 16px 50px rgba(17, 24, 39, 0.08);
+      }
+
+      .setup-panel {
+        display: grid;
+        gap: 14px;
+        padding: 14px;
+      }
+
+      .section {
+        display: grid;
+        gap: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 12px;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .count {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .rows {
+        display: grid;
+        gap: 10px;
+      }
+
+      .player-row,
+      .role-row {
+        display: grid;
+        gap: 9px;
+        border-radius: var(--radius);
+        background: var(--surface-strong);
+        padding: 10px;
+      }
+
+      .player-row {
+        grid-template-columns: minmax(0, 1fr) 44px;
+        align-items: end;
+      }
+
+      .role-topline {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        align-items: end;
+        gap: 9px;
+      }
+
+      .icon-button {
+        display: inline-grid;
+        place-items: center;
+        width: 44px;
+        padding: 0;
+        border: 1px solid var(--line);
+        background: #ffffff;
+        color: var(--muted);
+        font-size: 1.25rem;
+        line-height: 1;
+      }
+
+      .icon-button:hover {
+        background: #f8fafc;
+        color: var(--ink);
+      }
+
+      .action-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .button-primary {
+        background: var(--accent);
+        color: #ffffff;
+        box-shadow: 0 8px 18px rgba(197, 34, 51, 0.22);
+      }
+
+      .button-primary:hover {
+        background: var(--accent-strong);
+      }
+
+      .button-secondary {
+        border: 1px solid var(--line);
+        background: #ffffff;
+        color: var(--ink);
+      }
+
+      .button-secondary:hover {
+        background: #f8fafc;
+      }
+
+      .button-danger {
+        border: 1px solid rgba(197, 34, 51, 0.28);
+        background: rgba(197, 34, 51, 0.08);
+        color: var(--accent-strong);
+      }
+
+      .button-danger:hover {
+        background: rgba(197, 34, 51, 0.14);
+      }
+
+      .error-box {
+        display: none;
+        border: 1px solid rgba(180, 83, 9, 0.35);
+        border-radius: var(--radius);
+        background: rgba(251, 191, 36, 0.12);
+        padding: 11px 12px;
+        color: #7c2d12;
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+
+      .error-box.is-visible {
+        display: block;
+      }
+
+      .reveal-panel {
+        display: none;
+        min-height: calc(100vh - 92px);
+        padding: 14px;
+      }
+
+      .reveal-panel.is-active {
+        display: grid;
+        align-content: center;
+      }
+
+      .reveal-card {
+        display: grid;
+        gap: 18px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 20px 14px;
+        text-align: center;
+        box-shadow: 0 16px 50px rgba(17, 24, 39, 0.08);
+      }
+
+      .reveal-kicker {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
+      .player-name {
+        overflow-wrap: anywhere;
+        font-size: 2rem;
+        font-weight: 880;
+        line-height: 1.08;
+      }
+
+      .role-name {
+        overflow-wrap: anywhere;
+        color: var(--accent-strong);
+        font-size: 2.35rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .role-description {
+        color: var(--muted);
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+
+      .impostor-list {
+        display: none;
+        border: 1px solid rgba(197, 34, 51, 0.22);
+        border-radius: var(--radius);
+        background: rgba(197, 34, 51, 0.08);
+        padding: 12px;
+        text-align: left;
+      }
+
+      .impostor-list.is-visible {
+        display: block;
+      }
+
+      .impostor-list strong {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--accent-strong);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+      }
+
+      .impostor-list p {
+        overflow-wrap: anywhere;
+        line-height: 1.4;
+      }
+
+      .done-actions {
+        display: grid;
+        gap: 10px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (min-width: 640px) {
+        .app-shell {
+          padding: 32px 22px 40px;
+        }
+
+        .setup-panel {
+          gap: 16px;
+          padding: 18px;
+        }
+
+        .action-row,
+        .done-actions {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .player-name {
+          font-size: 2.4rem;
+        }
+
+        .role-name {
+          font-size: 3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <h1>Coopersmith Creations Presents - Us Among Roles</h1>
+        </div>
+        <span id="saveStatus" class="status-pill">Saved locally</span>
+      </header>
+
+      <section id="setupView" class="panel setup-panel" aria-labelledby="setupTitle">
+        <div class="section-header">
+          <h2 id="setupTitle">Game setup</h2>
+          <button id="clearSavedButton" class="button-danger" type="button">
+            Clear saved
+          </button>
+        </div>
+
+        <section class="section" aria-labelledby="playersTitle">
+          <div class="section-header">
+            <h2 id="playersTitle">Players</h2>
+            <span id="playerCount" class="count">0</span>
+          </div>
+          <div id="playersList" class="rows"></div>
+          <button id="addPlayerButton" class="button-secondary" type="button">
+            Add player
+          </button>
+        </section>
+
+        <section class="section" aria-labelledby="impostorsTitle">
+          <div class="section-header">
+            <h2 id="impostorsTitle">Impostors</h2>
+            <span id="impostorCount" class="count">0</span>
+          </div>
+          <div id="impostorRolesList" class="rows"></div>
+          <button id="addImpostorRoleButton" class="button-secondary" type="button">
+            Add impostor role
+          </button>
+        </section>
+
+        <section class="section" aria-labelledby="crewmatesTitle">
+          <div class="section-header">
+            <h2 id="crewmatesTitle">Crewmates</h2>
+            <span id="crewmateCount" class="count">0</span>
+          </div>
+          <div id="crewmateRolesList" class="rows"></div>
+          <button id="addCrewmateRoleButton" class="button-secondary" type="button">
+            Add crewmate role
+          </button>
+        </section>
+
+        <div id="errors" class="error-box" role="alert" aria-live="polite"></div>
+
+        <div class="action-row">
+          <button id="assignButton" class="button-primary" type="button">
+            Assign roles
+          </button>
+          <button id="resetRoundButton" class="button-secondary" type="button">
+            Reset round
+          </button>
+        </div>
+      </section>
+
+      <section id="revealView" class="reveal-panel" aria-live="polite">
+        <div class="reveal-card">
+          <p id="revealProgress" class="reveal-kicker">Player 1 of 1</p>
+          <p id="revealPlayerName" class="player-name"></p>
+
+          <div id="roleBlock" class="hidden">
+            <p id="roleName" class="role-name"></p>
+            <p id="roleDescription" class="role-description"></p>
+          </div>
+
+          <div id="impostorList" class="impostor-list">
+            <strong>Other impostors</strong>
+            <p id="impostorNames"></p>
+          </div>
+
+          <button id="revealButton" class="button-primary" type="button">
+            Show role
+          </button>
+
+          <div id="doneActions" class="done-actions hidden">
+            <button id="reshowRolesButton" class="button-primary" type="button">
+              Re-show roles
+            </button>
+            <button id="newAssignmentButton" class="button-primary" type="button">
+              New assignment
+            </button>
+            <button id="editSetupButton" class="button-secondary" type="button">
+              Edit setup
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const COOKIE_NAME = "amongus_role_setup";
+      const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+      const STORAGE_KEY = "amongus_role_setup_fallback";
+
+      const state = {
+        players: ["", "", "", ""],
+        impostorRoles: [{ name: "", description: "" }],
+        crewmateRoles: [{ name: "", description: "" }],
+        assignments: [],
+        revealIndex: 0,
+        roleVisible: false,
+      };
+
+      const elements = {
+        saveStatus: document.querySelector("#saveStatus"),
+        setupView: document.querySelector("#setupView"),
+        revealView: document.querySelector("#revealView"),
+        playersList: document.querySelector("#playersList"),
+        impostorRolesList: document.querySelector("#impostorRolesList"),
+        crewmateRolesList: document.querySelector("#crewmateRolesList"),
+        playerCount: document.querySelector("#playerCount"),
+        impostorCount: document.querySelector("#impostorCount"),
+        crewmateCount: document.querySelector("#crewmateCount"),
+        errors: document.querySelector("#errors"),
+        addPlayerButton: document.querySelector("#addPlayerButton"),
+        addImpostorRoleButton: document.querySelector("#addImpostorRoleButton"),
+        addCrewmateRoleButton: document.querySelector("#addCrewmateRoleButton"),
+        assignButton: document.querySelector("#assignButton"),
+        clearSavedButton: document.querySelector("#clearSavedButton"),
+        resetRoundButton: document.querySelector("#resetRoundButton"),
+        revealProgress: document.querySelector("#revealProgress"),
+        revealPlayerName: document.querySelector("#revealPlayerName"),
+        roleBlock: document.querySelector("#roleBlock"),
+        roleName: document.querySelector("#roleName"),
+        roleDescription: document.querySelector("#roleDescription"),
+        impostorList: document.querySelector("#impostorList"),
+        impostorNames: document.querySelector("#impostorNames"),
+        revealButton: document.querySelector("#revealButton"),
+        doneActions: document.querySelector("#doneActions"),
+        reshowRolesButton: document.querySelector("#reshowRolesButton"),
+        newAssignmentButton: document.querySelector("#newAssignmentButton"),
+        editSetupButton: document.querySelector("#editSetupButton"),
+      };
+
+      function cloneRole(role = {}) {
+        return {
+          name: typeof role.name === "string" ? role.name : "",
+          description:
+            typeof role.description === "string" ? role.description : "",
+        };
+      }
+
+      function normalizeLoadedList(list, fallback) {
+        return Array.isArray(list) && list.length > 0 ? list : fallback;
+      }
+
+      function applySavedPayload(payload) {
+        state.players = normalizeLoadedList(payload.players, state.players)
+          .filter((player) => typeof player === "string")
+          .map((player) => player);
+        state.impostorRoles = normalizeLoadedList(
+          payload.impostorRoles,
+          state.impostorRoles,
+        ).map(cloneRole);
+        state.crewmateRoles = normalizeLoadedList(
+          payload.crewmateRoles,
+          state.crewmateRoles,
+        ).map(cloneRole);
+      }
+
+      function readCookiePayload() {
+        const rawCookie = document.cookie
+          .split("; ")
+          .find((item) => item.startsWith(`${COOKIE_NAME}=`));
+
+        return rawCookie
+          ? decodeURIComponent(rawCookie.slice(COOKIE_NAME.length + 1))
+          : "";
+      }
+
+      function readFallbackPayload() {
+        try {
+          return window.localStorage.getItem(STORAGE_KEY) || "";
+        } catch {
+          return "";
+        }
+      }
+
+      function loadSavedSetup() {
+        const rawPayload = readCookiePayload() || readFallbackPayload();
+
+        if (!rawPayload) {
+          return;
+        }
+
+        try {
+          applySavedPayload(JSON.parse(rawPayload));
+        } catch {
+          deleteSavedSetup();
+        }
+      }
+
+      function saveSetup() {
+        const payload = JSON.stringify({
+          players: state.players,
+          impostorRoles: state.impostorRoles,
+          crewmateRoles: state.crewmateRoles,
+        });
+
+        document.cookie = `${COOKIE_NAME}=${encodeURIComponent(payload)}; max-age=${COOKIE_MAX_AGE}; path=/; samesite=lax`;
+        try {
+          window.localStorage.setItem(STORAGE_KEY, payload);
+        } catch {
+          // Cookie persistence still works when browser storage is unavailable.
+        }
+        flashSavedStatus("Saved locally");
+      }
+
+      function deleteSavedSetup() {
+        document.cookie = `${COOKIE_NAME}=; max-age=0; path=/; samesite=lax`;
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // Nothing else to clear when browser storage is unavailable.
+        }
+      }
+
+      let saveStatusTimer = null;
+
+      function flashSavedStatus(text) {
+        elements.saveStatus.textContent = text;
+        clearTimeout(saveStatusTimer);
+        saveStatusTimer = window.setTimeout(() => {
+          elements.saveStatus.textContent = "Saved locally";
+        }, 1100);
+      }
+
+      function createFieldLabel(text, forId) {
+        const label = document.createElement("label");
+        label.textContent = text;
+        label.htmlFor = forId;
+        return label;
+      }
+
+      function createTextInput(id, value, placeholder, onInput) {
+        const input = document.createElement("input");
+        input.id = id;
+        input.type = "text";
+        input.autocomplete = "off";
+        input.value = value;
+        input.placeholder = placeholder;
+        input.addEventListener("input", (event) => onInput(event.target.value));
+        return input;
+      }
+
+      function createTextarea(id, value, placeholder, onInput) {
+        const textarea = document.createElement("textarea");
+        textarea.id = id;
+        textarea.value = value;
+        textarea.placeholder = placeholder;
+        textarea.addEventListener("input", (event) =>
+          onInput(event.target.value),
+        );
+        return textarea;
+      }
+
+      function createRemoveButton(label, onClick) {
+        const button = document.createElement("button");
+        button.className = "icon-button";
+        button.type = "button";
+        button.textContent = "×";
+        button.setAttribute("aria-label", label);
+        button.title = label;
+        button.addEventListener("click", onClick);
+        return button;
+      }
+
+      function renderPlayers() {
+        elements.playersList.replaceChildren();
+
+        state.players.forEach((player, index) => {
+          const row = document.createElement("div");
+          row.className = "player-row";
+
+          const field = document.createElement("div");
+          const inputId = `player-${index}`;
+          field.append(
+            createFieldLabel(`Player ${index + 1}`, inputId),
+            createTextInput(inputId, player, "Name", (value) => {
+              state.players[index] = value;
+              updateCounts();
+              clearErrors();
+              saveSetup();
+            }),
+          );
+
+          row.append(
+            field,
+            createRemoveButton(`Remove player ${index + 1}`, () => {
+              state.players.splice(index, 1);
+              if (state.players.length === 0) {
+                state.players.push("");
+              }
+              renderAll();
+              saveSetup();
+            }),
+          );
+
+          elements.playersList.append(row);
+        });
+      }
+
+      function renderRoles(list, container, prefix, title, placeholder) {
+        container.replaceChildren();
+
+        list.forEach((role, index) => {
+          const row = document.createElement("div");
+          row.className = "role-row";
+
+          const topLine = document.createElement("div");
+          topLine.className = "role-topline";
+
+          const nameField = document.createElement("div");
+          const nameId = `${prefix}-role-name-${index}`;
+          nameField.append(
+            createFieldLabel(`${title} ${index + 1}`, nameId),
+            createTextInput(nameId, role.name, placeholder, (value) => {
+              role.name = value;
+              updateCounts();
+              clearErrors();
+              saveSetup();
+            }),
+          );
+
+          topLine.append(
+            nameField,
+            createRemoveButton(`Remove ${title.toLowerCase()} ${index + 1}`, () => {
+              list.splice(index, 1);
+              if (list.length === 0) {
+                list.push({ name: "", description: "" });
+              }
+              renderAll();
+              saveSetup();
+            }),
+          );
+
+          const descriptionId = `${prefix}-role-description-${index}`;
+          row.append(
+            topLine,
+            createFieldLabel("Description", descriptionId),
+            createTextarea(descriptionId, role.description, "Optional", (value) => {
+              role.description = value;
+              saveSetup();
+            }),
+          );
+
+          container.append(row);
+        });
+      }
+
+      function renderAll() {
+        renderPlayers();
+        renderRoles(
+          state.impostorRoles,
+          elements.impostorRolesList,
+          "impostor",
+          "Impostor role",
+          "Role name",
+        );
+        renderRoles(
+          state.crewmateRoles,
+          elements.crewmateRolesList,
+          "crewmate",
+          "Crewmate role",
+          "Role name",
+        );
+        updateCounts();
+        clearErrors();
+      }
+
+      function filledPlayers() {
+        return state.players.map((player) => player.trim()).filter(Boolean);
+      }
+
+      function filledRoles(list) {
+        return list
+          .map((role) => ({
+            name: role.name.trim(),
+            description: role.description.trim(),
+          }))
+          .filter((role) => role.name);
+      }
+
+      function updateCounts() {
+        elements.playerCount.textContent = `${filledPlayers().length} ready`;
+        elements.impostorCount.textContent = `${filledRoles(
+          state.impostorRoles,
+        ).length} ready`;
+        elements.crewmateCount.textContent = `${filledRoles(
+          state.crewmateRoles,
+        ).length} ready`;
+      }
+
+      function clearErrors() {
+        elements.errors.classList.remove("is-visible");
+        elements.errors.textContent = "";
+      }
+
+      function showErrors(messages) {
+        elements.errors.innerHTML = messages
+          .map((message) => `<div>${escapeHtml(message)}</div>`)
+          .join("");
+        elements.errors.classList.add("is-visible");
+        elements.errors.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (character) => {
+          const escapes = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;",
+          };
+          return escapes[character];
+        });
+      }
+
+      function validateSetup() {
+        const players = filledPlayers();
+        const impostorRoles = filledRoles(state.impostorRoles);
+        const crewmateRoles = filledRoles(state.crewmateRoles);
+        const errors = [];
+        const uniquePlayers = new Set(players.map((player) => player.toLowerCase()));
+
+        if (players.length < 2) {
+          errors.push("Add at least two players.");
+        }
+
+        if (uniquePlayers.size !== players.length) {
+          errors.push("Player names must be unique.");
+        }
+
+        if (impostorRoles.length < 1) {
+          errors.push("Add at least one impostor role.");
+        }
+
+        if (impostorRoles.length > players.length) {
+          errors.push("Impostor roles cannot outnumber players.");
+        }
+
+        const remainingPlayers = players.length - impostorRoles.length;
+        if (crewmateRoles.length < remainingPlayers) {
+          errors.push(
+            `Add ${remainingPlayers - crewmateRoles.length} more crewmate role${
+              remainingPlayers - crewmateRoles.length === 1 ? "" : "s"
+            }.`,
+          );
+        }
+
+        return {
+          errors,
+          players,
+          impostorRoles,
+          crewmateRoles,
+        };
+      }
+
+      function shuffled(items) {
+        const copy = [...items];
+
+        for (let index = copy.length - 1; index > 0; index -= 1) {
+          const randomIndex = Math.floor(Math.random() * (index + 1));
+          [copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]];
+        }
+
+        return copy;
+      }
+
+      function assignRoles() {
+        const setup = validateSetup();
+
+        if (setup.errors.length) {
+          showErrors(setup.errors);
+          return false;
+        }
+
+        clearErrors();
+        saveSetup();
+
+        const shuffledPlayers = shuffled(setup.players);
+        const shuffledImpostorRoles = shuffled(setup.impostorRoles);
+        const shuffledCrewmateRoles = shuffled(setup.crewmateRoles);
+        const assignmentsByPlayer = new Map();
+
+        shuffledImpostorRoles.forEach((role, index) => {
+          assignmentsByPlayer.set(shuffledPlayers[index], {
+            player: shuffledPlayers[index],
+            role,
+            team: "impostor",
+          });
+        });
+
+        shuffledPlayers.slice(shuffledImpostorRoles.length).forEach((player, index) => {
+          assignmentsByPlayer.set(player, {
+            player,
+            role: shuffledCrewmateRoles[index],
+            team: "crewmate",
+          });
+        });
+
+        state.assignments = setup.players.map((player) =>
+          assignmentsByPlayer.get(player),
+        );
+        state.revealIndex = 0;
+        state.roleVisible = false;
+        showRevealView();
+        return true;
+      }
+
+      function currentAssignment() {
+        return state.assignments[state.revealIndex];
+      }
+
+      function renderReveal() {
+        const assignment = currentAssignment();
+        const total = state.assignments.length;
+
+        elements.doneActions.classList.add("hidden");
+        elements.revealButton.classList.remove("hidden");
+        elements.impostorList.classList.remove("is-visible");
+        elements.roleBlock.classList.toggle("hidden", !state.roleVisible);
+
+        if (!assignment) {
+          elements.revealProgress.textContent = "All roles shown";
+          elements.revealPlayerName.textContent = "Round ready";
+          elements.roleBlock.classList.add("hidden");
+          elements.revealButton.classList.add("hidden");
+          elements.doneActions.classList.remove("hidden");
+          return;
+        }
+
+        elements.revealProgress.textContent = `Player ${
+          state.revealIndex + 1
+        } of ${total}`;
+        elements.revealPlayerName.textContent = assignment.player;
+
+        if (!state.roleVisible) {
+          elements.roleName.textContent = "";
+          elements.roleDescription.textContent = "";
+          elements.revealButton.textContent = "Show role";
+          return;
+        }
+
+        elements.roleName.textContent = assignment.role.name;
+        elements.roleDescription.textContent = assignment.role.description;
+        elements.roleDescription.classList.toggle(
+          "hidden",
+          !assignment.role.description,
+        );
+        elements.revealButton.textContent =
+          state.revealIndex === total - 1 ? "Finish" : "Hide and pass";
+
+        if (assignment.team === "impostor") {
+          const otherImpostors = state.assignments
+            .filter(
+              (item) =>
+                item.team === "impostor" && item.player !== assignment.player,
+            )
+            .map((item) => item.player);
+
+          elements.impostorNames.textContent = otherImpostors.length
+            ? otherImpostors.join(", ")
+            : "None";
+          elements.impostorList.classList.add("is-visible");
+        }
+      }
+
+      function showRevealView() {
+        elements.setupView.classList.add("hidden");
+        elements.revealView.classList.add("is-active");
+        renderReveal();
+        elements.revealButton.focus({ preventScroll: true });
+      }
+
+      function showSetupView() {
+        elements.revealView.classList.remove("is-active");
+        elements.setupView.classList.remove("hidden");
+        state.assignments = [];
+        state.revealIndex = 0;
+        state.roleVisible = false;
+      }
+
+      function resetRound() {
+        state.assignments = [];
+        state.revealIndex = 0;
+        state.roleVisible = false;
+        showSetupView();
+        clearErrors();
+      }
+
+      function reshowRoles() {
+        state.revealIndex = 0;
+        state.roleVisible = false;
+        showRevealView();
+      }
+
+      function clearSavedSetup() {
+        deleteSavedSetup();
+        state.players = ["", "", "", ""];
+        state.impostorRoles = [{ name: "", description: "" }];
+        state.crewmateRoles = [{ name: "", description: "" }];
+        resetRound();
+        renderAll();
+        flashSavedStatus("Cleared");
+      }
+
+      elements.addPlayerButton.addEventListener("click", () => {
+        state.players.push("");
+        renderAll();
+        saveSetup();
+        document.querySelector(`#player-${state.players.length - 1}`).focus();
+      });
+
+      elements.addImpostorRoleButton.addEventListener("click", () => {
+        state.impostorRoles.push({ name: "", description: "" });
+        renderAll();
+        saveSetup();
+        document
+          .querySelector(`#impostor-role-name-${state.impostorRoles.length - 1}`)
+          .focus();
+      });
+
+      elements.addCrewmateRoleButton.addEventListener("click", () => {
+        state.crewmateRoles.push({ name: "", description: "" });
+        renderAll();
+        saveSetup();
+        document
+          .querySelector(`#crewmate-role-name-${state.crewmateRoles.length - 1}`)
+          .focus();
+      });
+
+      elements.assignButton.addEventListener("click", assignRoles);
+      elements.clearSavedButton.addEventListener("click", clearSavedSetup);
+      elements.resetRoundButton.addEventListener("click", resetRound);
+
+      elements.revealButton.addEventListener("click", () => {
+        if (!state.roleVisible) {
+          state.roleVisible = true;
+        } else {
+          state.revealIndex += 1;
+          state.roleVisible = false;
+        }
+
+        renderReveal();
+      });
+
+      elements.newAssignmentButton.addEventListener("click", () => {
+        showSetupView();
+        assignRoles();
+      });
+
+      elements.reshowRolesButton.addEventListener("click", reshowRoles);
+      elements.editSetupButton.addEventListener("click", showSetupView);
+
+      loadSavedSetup();
+      renderAll();
+    </script>
+  </body>
+</html>
