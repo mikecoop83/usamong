@@ -585,7 +585,6 @@
 
     <script>
       const COOKIE_NAME = "amongus_role_setup";
-      const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
       const STORAGE_KEY = "amongus_role_setup_fallback";
 
       const state = {
@@ -808,7 +807,7 @@
           : "";
       }
 
-      function readFallbackPayload() {
+      function readStoragePayload() {
         try {
           return window.localStorage.getItem(STORAGE_KEY) || "";
         } catch {
@@ -816,18 +815,52 @@
         }
       }
 
-      function loadSavedSetup() {
-        const rawPayload = readCookiePayload() || readFallbackPayload();
+      function writeStoragePayload(payload) {
+        window.localStorage.setItem(STORAGE_KEY, payload);
+      }
 
-        if (!rawPayload) {
+      function deleteCookiePayload() {
+        document.cookie = `${COOKIE_NAME}=; max-age=0; path=/; samesite=lax`;
+      }
+
+      function loadSavedSetup() {
+        const storedPayload = readStoragePayload();
+        const cookiePayload = readCookiePayload();
+        const candidates = [
+          { payload: storedPayload, source: "storage" },
+          { payload: cookiePayload, source: "cookie" },
+        ].filter((candidate) => candidate.payload);
+
+        if (!candidates.length) {
           return;
         }
 
-        try {
-          applyStoredPayload(JSON.parse(rawPayload));
-        } catch {
-          deleteSavedSetup();
+        for (const candidate of candidates) {
+          let parsedPayload = null;
+          try {
+            parsedPayload = JSON.parse(candidate.payload);
+          } catch {
+            // Try the next storage source before clearing corrupted data.
+            continue;
+          }
+
+          applyStoredPayload(parsedPayload);
+
+          if (candidate.source === "cookie") {
+            try {
+              writeStoragePayload(candidate.payload);
+              deleteCookiePayload();
+            } catch {
+              flashSavedStatus("Migration failed");
+            }
+          } else if (cookiePayload) {
+            deleteCookiePayload();
+          }
+
+          return;
         }
+
+        deleteSavedSetup();
       }
 
       function saveSetup() {
@@ -839,17 +872,17 @@
           profiles: state.profiles,
         });
 
-        document.cookie = `${COOKIE_NAME}=${encodeURIComponent(payload)}; max-age=${COOKIE_MAX_AGE}; path=/; samesite=lax`;
         try {
-          window.localStorage.setItem(STORAGE_KEY, payload);
+          writeStoragePayload(payload);
+          deleteCookiePayload();
+          flashSavedStatus("Saved locally");
         } catch {
-          // Cookie persistence still works when browser storage is unavailable.
+          flashSavedStatus("Save failed");
         }
-        flashSavedStatus("Saved locally");
       }
 
       function deleteSavedSetup() {
-        document.cookie = `${COOKIE_NAME}=; max-age=0; path=/; samesite=lax`;
+        deleteCookiePayload();
         try {
           window.localStorage.removeItem(STORAGE_KEY);
         } catch {

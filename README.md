@@ -17,7 +17,7 @@ Impostors can also see the other impostors.
 
 ## Saved Data
 
-Setups are saved locally in the browser using cookies, with `localStorage` as a fallback for direct file usage. Profiles can be created, updated, selected, and deleted from the page.
+Setups are saved locally in the browser using `localStorage`. Older cookie-saved setups are migrated into `localStorage` on startup. Profiles can be created, updated, selected, and deleted from the page.
 
 ## Icon
 
