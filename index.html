@@ -32,6 +32,29 @@
           "Segoe UI", sans-serif;
       }
 
+      html[data-theme="dark"] {
+        color-scheme: dark;
+      }
+
+      html[data-theme="dark"] {
+        --bg: #0c0a09;
+        --surface: #1c1917;
+        --surface-strong: #201c19;
+        --text: #e7e3de;
+        --muted: #9a9287;
+        --line: #2a2420;
+        --accent: #e5394a;
+        --accent-strong: #ff6b7a;
+        --ink: #f5f1ec;
+        --focus: #60a5fa;
+      }
+
+      html[data-theme="dark"] body {
+        background:
+          linear-gradient(180deg, rgba(197, 34, 51, 0.14), transparent 260px),
+          var(--bg);
+      }
+
       * {
         box-sizing: border-box;
       }
@@ -122,6 +145,12 @@
         justify-content: space-between;
         gap: 12px;
         margin-bottom: 16px;
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       .brand {
@@ -443,6 +472,58 @@
           font-size: 3rem;
         }
       }
+
+      /* Dark mode refinements */
+      html[data-theme="dark"] input,
+      html[data-theme="dark"] select,
+      html[data-theme="dark"] textarea {
+        background: var(--surface);
+        border-color: var(--line);
+        color: var(--text);
+      }
+      html[data-theme="dark"] .panel {
+        background: var(--surface);
+      }
+      html[data-theme="dark"] .icon-button {
+        background: var(--surface);
+        color: var(--muted);
+      }
+      html[data-theme="dark"] .icon-button:hover {
+        background: var(--surface-strong);
+        color: var(--ink);
+      }
+      html[data-theme="dark"] .button-secondary {
+        background: var(--surface);
+        color: var(--text);
+      }
+      html[data-theme="dark"] .button-secondary:hover {
+        background: var(--surface-strong);
+      }
+      html[data-theme="dark"] .button-danger {
+        background: rgba(197,34,51,0.12);
+        border-color: rgba(197,34,51,0.35);
+        color: var(--accent-strong);
+      }
+      html[data-theme="dark"] .status-pill {
+        background: rgba(255,255,255,0.06);
+        border-color: var(--line);
+      }
+      html[data-theme="dark"] .section {
+        background: var(--surface);
+      }
+      html[data-theme="dark"] .player-row,
+      html[data-theme="dark"] .role-row {
+        background: var(--surface-strong);
+      }
+      html[data-theme="dark"] .impostor-list {
+        background: rgba(197,34,51,0.12);
+        border-color: rgba(197,34,51,0.35);
+      }
+      html[data-theme="dark"] .error-box {
+        background: rgba(251,191,36,0.08);
+        border-color: rgba(251,191,36,0.35);
+        color: #fde68a;
+      }
     </style>
   </head>
   <body>
@@ -452,7 +533,10 @@
           <span class="brand-mark" aria-hidden="true"></span>
           <h1>Coopersmith Creations Presents - Us Among Roles</h1>
         </div>
-        <span id="saveStatus" class="status-pill">Saved locally</span>
+        <div class="topbar-actions">
+          <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle dark mode">🌙</button>
+          <span id="saveStatus" class="status-pill">Saved locally</span>
+        </div>
       </header>
 
       <section id="setupView" class="panel setup-panel" aria-labelledby="setupTitle">
@@ -1564,6 +1648,32 @@
 
       elements.reshowRolesButton.addEventListener("click", reshowRoles);
       elements.editSetupButton.addEventListener("click", showSetupView);
+
+      // Dark mode theme toggle
+      (function() {
+        const THEME_KEY = 'usamong-theme';
+        const themeToggle = document.getElementById('themeToggle');
+        function applyTheme(t) {
+          if (t === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            if (themeToggle) themeToggle.textContent = '☀️';
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+            if (themeToggle) themeToggle.textContent = '🌙';
+          }
+        }
+        const saved = localStorage.getItem(THEME_KEY);
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+        if (themeToggle) {
+          themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem(THEME_KEY, next);
+            applyTheme(next);
+          });
+        }
+      })();
 
       loadSavedSetup();
       renderAll();
